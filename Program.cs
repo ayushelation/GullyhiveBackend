@@ -37,7 +37,9 @@ builder.Services.AddCors(options =>
                 "https://gullyhive.netlify.app",  // without trailing slash
                 "https://gullyhive.netlify.app/", // with trailing slash
                 "http://localhost:4200",          // for local development
-                "http://localhost:4200/"          // with trailing slash
+                "http://localhost:4200/",        // with trailing slash
+                "https://gullyhivefrontend.onrender.com/",
+                "https://gullyhivefrontend.onrender.com"
             )
               .AllowAnyHeader()
               .AllowAnyMethod()
