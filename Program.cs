@@ -16,15 +16,24 @@ using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+// prevent 500
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new Exception("JWT Key missing");
+
+var conStr = builder.Configuration.GetConnectionString("ConStr");
+if (string.IsNullOrWhiteSpace(conStr))
+    throw new Exception("Connection string missing");
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -183,22 +192,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 });
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// 🔥 TEMP: show full exceptions on Render
+app.UseDeveloperExceptionPage();
+
+// Swagger enabled in Production (important for Render)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseCors("AllowAngularApp");
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
