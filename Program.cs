@@ -209,7 +209,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers().RequireCors("AllowFrontend");
 
 
 app.Run();
