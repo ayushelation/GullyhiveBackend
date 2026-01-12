@@ -33,7 +33,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200")
+        policy.WithOrigins(
+                "https://gullyhive.netlify.app",  // without trailing slash
+                "https://gullyhive.netlify.app/", // with trailing slash
+                "http://localhost:4200",          // for local development
+                "http://localhost:4200/"          // with trailing slash
+            )
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
