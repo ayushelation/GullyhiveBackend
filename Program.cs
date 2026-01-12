@@ -202,8 +202,9 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
 app.UseCors("AllowFrontend");
+app.UseRouting();
+
 
 app.UseAuthentication();
 app.UseAuthorization();
