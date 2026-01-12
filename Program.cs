@@ -198,9 +198,17 @@ app.UseDeveloperExceptionPage();
 // Swagger enabled in Production (important for Render)
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == HttpMethods.Options)
+    {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        return;
+    }
+    await next();
+});
 // app.UseHttpsRedirection();
-app.UseStaticFiles();
+// app.UseStaticFiles();
 
 app.UseCors("AllowFrontend");
 app.UseRouting();
