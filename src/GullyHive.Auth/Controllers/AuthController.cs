@@ -111,6 +111,7 @@ namespace GullyHive.Auth.Controllers
         // LOGIN
         // ============================
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody] Models.LoginRequest request)
         {
             using var conn = new NpgsqlConnection(_connectionString);
