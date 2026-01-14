@@ -51,7 +51,7 @@ namespace GullyHive.Seller.Controllers
             return Ok("Seller module alive");
         }
 
-        [Authorize] // Require a valid JWT token
+        //[Authorize] // Require a valid JWT token
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboardData()
         {
