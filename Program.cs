@@ -16,17 +16,34 @@ using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+// prevent 500
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new Exception("JWT Key missing");
+
+var conStr = builder.Configuration.GetConnectionString("ConStr");
+if (string.IsNullOrWhiteSpace(conStr))
+    throw new Exception("Connection string missing");
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+                "https://gullyhive.netlify.app",  // without trailing slash
+                "https://gullyhive.netlify.app/", // with trailing slash
+                "http://localhost:4200",          // for local development
+                "http://localhost:4200/",        // with trailing slash
+                "https://gullyhivefrontend.onrender.com/",
+                "https://gullyhivefrontend.onrender.com"
+            )
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 builder.Services
@@ -183,22 +200,20 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 });
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// TEMP: show full exceptions on Render
+app.UseDeveloperExceptionPage();
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+// Swagger enabled in Production (important for Render)
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// app.UseHttpsRedirection();
+// app.UseStaticFiles();
+
 
 app.UseRouting();
-app.UseCors("AllowAngularApp");
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
