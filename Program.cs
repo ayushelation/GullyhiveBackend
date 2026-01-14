@@ -17,13 +17,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 // prevent 500
-var jwtKey = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrWhiteSpace(jwtKey))
-    throw new Exception("JWT Key missing");
+//var jwtKey = builder.Configuration["Jwt:Key"];
+//if (string.IsNullOrWhiteSpace(jwtKey))
+//    throw new Exception("JWT Key missing");
 
-var conStr = builder.Configuration.GetConnectionString("ConStr");
-if (string.IsNullOrWhiteSpace(conStr))
-    throw new Exception("Connection string missing");
+//var conStr = builder.Configuration.GetConnectionString("ConStr");
+//if (string.IsNullOrWhiteSpace(conStr))
+//    throw new Exception("Connection string missing");
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
