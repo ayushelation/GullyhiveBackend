@@ -2,6 +2,7 @@
 
 public interface IPublicProfileRepository
 {
-    Task<PublicProfileDto?> GetPublicProfileAsync(long sellerId);
+    Task<PublicProfileDto?> GetPublicProfileAsync(long providerId);
     Task<bool> UpdateProfileAsync(long providerId, UpdateProfileDto dto);
 }
+

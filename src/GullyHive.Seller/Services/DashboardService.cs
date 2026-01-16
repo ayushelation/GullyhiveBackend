@@ -28,7 +28,8 @@ namespace GullyHive.Seller.Services
                 Name = user.DisplayName,
                 Email = user.email,
                 Stats = stats,
-                RecentLeads = recentLeads
+                RecentLeads = recentLeads,
+                ProfilePictureUrl = user.ProfilePictureUrl,
             };
         }
     }
