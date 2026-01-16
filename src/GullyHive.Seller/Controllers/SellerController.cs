@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using StackExchange.Redis;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GullyHive.Seller.Controllers
 {
@@ -25,11 +26,13 @@ namespace GullyHive.Seller.Controllers
         private readonly IHelpService _helpService;
         private readonly IReferralService _referralService;
         private readonly IPartnerEarningService _earningService;
-  
+        private readonly IProviderService _pservice;
+
         public SellerController(IConfiguration config, IConnectionMultiplexer redis, IUserService userService, IDashboardService dashboardService, ILeadService ileadService, IPublicProfileService service, IResponseService responseService,
             IHelpService helpService,
             IReferralService referralService,
-            IPartnerEarningService earningService
+            IPartnerEarningService earningService,
+            IProviderService pservice
             )
         {
             _config = config;
@@ -43,6 +46,7 @@ namespace GullyHive.Seller.Controllers
             _helpService = helpService;
             _referralService = referralService;
             _earningService = earningService;
+            _pservice = pservice;
         }
 
         [HttpGet("Index")]
@@ -51,7 +55,7 @@ namespace GullyHive.Seller.Controllers
             return Ok("Seller module alive");
         }
 
-        [Authorize] // Require a valid JWT token
+        //[Authorize] // Require a valid JWT token
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboardData()
         {
@@ -65,33 +69,56 @@ namespace GullyHive.Seller.Controllers
             return Ok(new { success = true, data = leads });
         }
 
+        //[HttpGet("completeProfile/{sellerId}")]
+        //[Authorize]
+        //public async Task<IActionResult> GetPublicProfile(long sellerId)
+        //{
+        //    var profile = await _service.GetPublicProfileAsync(sellerId);
+
+        //    if (profile == null)
+        //        return NotFound(new { success = false, message = "Seller not found" });
+
+        //    return Ok(new { success = true, data = profile });
+        //}
+        //[HttpPut("editprofile/{providerId}")]
+        //public async Task<IActionResult> UpdateProfile(long providerId, [FromBody] UpdateProfileDto dto)
+        //{
+        //    var success = await _service.UpdateProfileAsync(providerId, dto);
+        //    if (!success)
+        //        return BadRequest("Failed to update profile");
+
+        //    return NoContent();
+        //}
         [HttpGet("completeProfile/{sellerId}")]
-        [Authorize]
         public async Task<IActionResult> GetPublicProfile(long sellerId)
         {
             var profile = await _service.GetPublicProfileAsync(sellerId);
-
             if (profile == null)
                 return NotFound(new { success = false, message = "Seller not found" });
 
             return Ok(new { success = true, data = profile });
         }
-        [HttpPut("editprofile/{providerId}")]
-        public async Task<IActionResult> UpdateProfile(long providerId, [FromBody] UpdateProfileDto dto)
-        {
-            var success = await _service.UpdateProfileAsync(providerId, dto);
-            if (!success)
-                return BadRequest("Failed to update profile");
+        //[HttpPost("updateProfile/{providerId}")]
+        //public async Task<IActionResult> UpdateProfile(long providerId, [FromForm] UpdateProfileDto dto)
+        //{
+        //    var result = await _service.UpdateProfileAsync(providerId, dto);
+        //    if (!result)
+        //        return BadRequest(new { success = false, message = "Update failed" });
 
-            return NoContent();
+        //    return Ok(new { success = true, message = "Profile updated successfully" });
+        //}
+
+
+        [HttpPost("updateProfile/{providerId}")]
+        public async Task<IActionResult> UpdateProfile(long providerId, [FromForm] UpdateProfileDto dto)
+        {
+            var result = await _service.UpdateProfileAsync(providerId, dto);
+            if (!result)
+                return BadRequest(new { success = false, message = "Update failed" });
+
+            return Ok(new { success = true, message = "Profile updated successfully" });
         }
 
-
-        // =========================
-        // RESPONSES (CRUD) inside SellerController
-        // =========================
-
-        // GET: /api/seller/responses
 
 
 
@@ -152,8 +179,8 @@ namespace GullyHive.Seller.Controllers
             var success = await _responseService.Delete(id, sellerId);
             return Ok(new { success });
         }
-    
-            [HttpGet("faqs")]
+
+        [HttpGet("faqs")]
         public async Task<IActionResult> GetHelp()
         {
             var (categories, faqs) = await _helpService.GetHelpDataAsync();
@@ -166,29 +193,40 @@ namespace GullyHive.Seller.Controllers
             });
         }
 
-            [HttpGet("refer/{sellerId}")]
-            public async Task<IActionResult> GetReferrals(int sellerId)
-            {
-                var data = await _referralService.GetReferralsAsync(sellerId);
-                return Ok(new { success = true, data });
-            }
+        [HttpGet("refer/{sellerId}")]
+        public async Task<IActionResult> GetReferrals(int sellerId)
+        {
+            var data = await _referralService.GetReferralsAsync(sellerId);
+            return Ok(new { success = true, data });
+        }
 
-          //  [HttpGet("partner_earnings/user/{userId}")]
-            //public async Task<IActionResult> GetEarnings(int userId)
-            //{
-            //    var data = await _earningService.GetEarningsAsync(userId);
-            //    return Ok(new { success = true, data });
-            //}
+        //[HttpGet("services/{providerId}")]
+        //public async Task<IActionResult> GetProviderServicesInit(long providerId)
+        //{
+        //    var data = await _service.GetProviderServicesInit(providerId);
+        //    return Ok(new { success = true, data });
 
-            //[HttpGet("partner_earnings/user/{userId}/total")]
-            //public async Task<IActionResult> GetTotalEarnings(int userId)
-            //{
-            //    var total = await _earningService.GetTotalEarningsAsync(userId);
-            //    return Ok(new { success = true, totalEarnings = total });
-            //}
-        
+        //}
+        // GET provider services
+        [HttpGet("services/{providerId}")]
+        public async Task<IActionResult> GetProviderServices(long providerId)
+        {
+            var data = await _pservice.GetProviderServicesInit(providerId);
+            return Ok(new { success = true, data });
+        }
+
+        // UPDATE provider services
+        [HttpPost("services/{providerId}")]
+        public async Task<IActionResult> UpdateProviderServices(long providerId, [FromBody] UpdateProviderServicesDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid payload");
+
+            await _pservice.UpdateProviderServices(providerId, dto);
+            return Ok(new { success = true, message = "Services updated successfully" });
+        }
+
     }
-
 }
 
 

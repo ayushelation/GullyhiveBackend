@@ -7,6 +7,7 @@ using GullyHive.Auth.Services;
 using GullyHive.Seller.Repositories;
 using GullyHive.Seller.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -14,6 +15,7 @@ using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // prevent 500
@@ -132,6 +134,14 @@ builder.Services.AddScoped<IReferralService, ReferralService>();
 builder.Services.AddScoped<IPartnerEarningRepository, PartnerEarningRepository>();
 builder.Services.AddScoped<IPartnerEarningService, PartnerEarningService>();
 
+builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+builder.Services.AddScoped<IServiceCategoryService, ServiceCategoryService>();
+
+builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+
+
+
 
 
 
@@ -207,9 +217,37 @@ app.UseDeveloperExceptionPage();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// app.UseHttpsRedirection();
-// app.UseStaticFiles();
 
+
+// app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
+
+
+
+
+
+
+
+//// For uploads folder
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+//    RequestPath = "/uploads"
+//});
 
 app.UseRouting();
 

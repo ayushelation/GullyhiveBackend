@@ -18,17 +18,19 @@ namespace GullyHive.Seller.Repositories
         public async Task<SellerDto?> GetSellerByUsernameAsync(string username)
         {
             const string sql = @"
-             SELECT id, email, display_name AS DisplayName
-             FROM users
-             WHERE lower(display_name) = lower(@Username)  
-             OR lower(email) = lower(@Username)        
-             OR phone = @Username                      
-             LIMIT 1";
-
+    SELECT u.id, u.email, u.display_name AS DisplayName,
+           p.profile_picture_url AS ProfilePictureUrl
+    FROM users u
+    LEFT JOIN provider_profiles p ON u.id = p.user_id
+    WHERE lower(u.display_name) = lower(@Username)
+       OR lower(u.email) = lower(@Username)
+       OR u.phone = @Username
+    LIMIT 1;";
 
             using var conn = GetConnection();
             return await conn.QueryFirstOrDefaultAsync<SellerDto>(sql, new { Username = username });
         }
+
 
         public async Task<SellerStatsDto> GetSellerStatsAsync(long sellerId)
         {
