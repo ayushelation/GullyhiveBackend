@@ -7,6 +7,7 @@
         public string Email { get; set; } = string.Empty;
         public SellerStatsDto Stats { get; set; } = new SellerStatsDto();
         public IEnumerable<LeadDto> RecentLeads { get; set; } = new List<LeadDto>();
+        public string? ProfilePictureUrl { get; set; }
     }
     public class SellerStatsDto
     {
@@ -41,5 +42,7 @@
         public long Id { get; set; }
         public string email { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
+
     }
 }

@@ -24,15 +24,16 @@ namespace GullyHive.Auth.Controllers
         private readonly IConfiguration _config;
         private readonly IDatabase _redis;
         private readonly IUserService _userService;
+        private readonly IServiceCategoryService _service;
 
-       
 
-        public AuthController(IConfiguration config, IConnectionMultiplexer redis, IUserService userService)
+        public AuthController(IConfiguration config, IConnectionMultiplexer redis, IUserService userService, IServiceCategoryService service)
         {
             _config = config;
             _connectionString = config.GetConnectionString("ConStr")!;
             _redis = redis.GetDatabase();
             _userService = userService;
+            _service = service;
         }
 
         // =======================================
@@ -183,9 +184,17 @@ namespace GullyHive.Auth.Controllers
         //[HttpPost("register")]
         //public async Task<IActionResult> Register([FromBody] Models.RegisterRequest request)
 
-  
+        [HttpGet("parents")]
+        public async Task<IActionResult> GetParents()
+                    => Ok(await _service.GetServicesAsync());
 
-            [HttpPost("register")]  
+        [HttpGet("{parentId}/children")]
+        public async Task<IActionResult> GetChildren(long parentId)
+            => Ok(await _service.GetCategoriesAsync(parentId));
+
+
+
+        [HttpPost("register")]  
         public async Task<IActionResult> Register([FromForm] Models.RegisterRequest model)
         {
             if (!ModelState.IsValid)
